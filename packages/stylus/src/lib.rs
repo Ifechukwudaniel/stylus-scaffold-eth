@@ -1,10 +1,84 @@
-#![no_main]
+/ Allow `cargo stylus export-abi` to generate a main function.
+#![cfg_attr(not(feature = "export-abi"), no_main)]
 extern crate alloc;
 
-use alloc::vec::Vec;
-use stylus_sdk::stylus_proc::entrypoint;
+// Use an efficient WASM allocator for memory management.
+// #[global_allocator]
+// static ALLOC: mini_alloc::MiniAlloc = mini_alloc::MiniAlloc::INIT;
+use alloy_sol_types::sol;
+use alloy_primitives::U256;
+use stylus_sdk::{
+    call::transfer_eth, console, evm, msg, prelude::* , contract::balance
+};
 
-#[entrypoint]
-fn user_main(input: Vec<u8>) -> Result<Vec<u8>, Vec<u8>> {
-    Ok(input)
+
+
+sol! {
+    event GreetingChange(
+		address indexed greetingSetter,
+		string newGreeting,
+		bool premium,
+		uint256 value
+	);
+
+    error NotOwnerError();
+}
+
+
+#[derive(SolidityError)]
+pub enum YourContractError {
+     // Error for when the sender is not the owner
+     NotOwnerError(NotOwnerError)
+}
+
+// Define some persistent storage using the Solidity ABI.
+// `YourContract` will be the entrypoint.
+sol_storage! {
+    #[entrypoint]
+    pub struct YourContract {
+        address owner;
+        string  greeting;
+        bool premium;
+        uint256  totalCounter ;
+        mapping(address => uint256) userGreetingCounter;
+    }
+}
+
+/// Declare that `YourContract` is a contract with the following external methods.
+#[public]
+impl YourContract {
+   
+   #[payable]
+    pub fn setGreeting(&mut self, _newGreating: String) -> (){
+       self.greeting.set_str(_newGreating.clone());
+       self.totalCounter.set(*self.totalCounter + U256::from(1));
+       let mut address_greetings_count = self.userGreetingCounter.setter(msg::sender());
+       let count =  address_greetings_count.get();
+       address_greetings_count.set(count + U256::from(1));
+       if msg::value() > U256::from(0){
+           self.premium.set(true);
+       }
+       else {
+           self.premium.set(false);
+       }
+     
+       evm::log(GreetingChange {
+           greetingSetter: msg::sender(),
+           newGreeting: _newGreating, 
+           premium:*self.premium, 
+           value:msg::value()
+      });
+
+    }
+
+    pub fn withdraw (&mut self) -> Result<() ,YourContractError>{
+        if  *self.owner == msg::sender() { 
+            let _ = transfer_eth(*self.owner,balance());
+            Ok(())
+        }
+        else { 
+           return  Err(YourContractError::NotOwnerError(NotOwnerError{}));
+        }
+    }
+
 }
