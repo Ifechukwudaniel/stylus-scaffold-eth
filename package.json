@@ -5,7 +5,7 @@
   "workspaces": {
     "packages": [
       "packages/hardhat",
-      "packages/nextjs"
+      "packages/stylus"
     ]
   },
   "scripts": {
@@ -42,5 +42,8 @@
   },
   "engines": {
     "node": ">=18.17.0"
+  },
+  "dependencies": {
+    "solc": "^0.8.27"
   }
 }
