@@ -11,7 +11,8 @@ use stylus_sdk::{
 };
 use stylus_sdk::prelude::*;
 use alloy_primitives::private;
-use alloy_primitives::U256;
+use alloy_primitives::{Address, U256};
+
 
 sol! {
     event GreetingChange(
@@ -20,7 +21,9 @@ sol! {
 		bool premium,
 		uint256 value
 	);
+}
 
+sol! {
     error NotOwnerError();
 }
 
@@ -78,6 +81,26 @@ impl YourContract {
         else { 
            return  Err(YourContractError::NotOwnerError(NotOwnerError{}));
         }
+    }
+
+    pub fn greeting(&self) -> String {
+        self.greeting.get_string()
+    }
+
+    pub fn owner(&self) -> Address {
+        self.owner.get()
+    }     
+    
+    pub fn  premium(&self) -> bool {
+        self.premium.get()
+    }
+
+    pub fn totalCounter(&self) -> U256 {
+        self.totalCounter.get()
+    }
+
+    pub fn userGreetingCounter(&self, _user: Address) -> U256 {
+        self.userGreetingCounter.get(_user)
     }
 
 }
