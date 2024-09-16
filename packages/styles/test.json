@@ -1,0 +1,1 @@
+[{"inputs":[],"name":"NotOwnerError","type":"error"},{"inputs":[{"internalType":"string","name":"_newGreating","type":"string"}],"name":"setGreeting","outputs":[],"stateMutability":"payable","type":"function"},{"inputs":[],"name":"withdraw","outputs":[],"stateMutability":"nonpayable","type":"function"}]
