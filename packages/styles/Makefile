@@ -6,8 +6,8 @@
 # 	cast wallet import --private-key 0x2a871d0798f97d79848a013d4936a73bf4cc922c825d33c1cf7073dff6d409c6 --unsafe-password 'localhost' scaffold-eth-default
 
 # Start local chain
-chain: 
-	./nitro-testnode/test-node.bash --init
+chain:
+	scripts/nitro-testnode.sh --init 
 
 # Start a fork
 fork: setup-anvil-wallet

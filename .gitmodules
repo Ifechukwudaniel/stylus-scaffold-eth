@@ -1,3 +1,0 @@
-[submodule "packages/styles/nitro-testnode"]
-	path = packages/styles/nitro-testnode
-	url = git@github.com:OffchainLabs/nitro-testnode.git
