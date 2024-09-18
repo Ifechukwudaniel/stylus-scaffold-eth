@@ -1,18 +1,12 @@
 // Allow `cargo stylus export-abi` to generate a main function.
 #![cfg_attr(not(feature = "export-abi"), no_main)]
 extern crate alloc;
-
-// Use an efficient WASM allocator for memory management.
-// #[global_allocator]
-// static ALLOC: mini_alloc::MiniAlloc = mini_alloc::MiniAlloc::INIT;
 use alloy_sol_types::sol;
 use stylus_sdk::{
     call::transfer_eth, console, evm, msg , contract::balance
 };
 use stylus_sdk::prelude::*;
-use alloy_primitives::private;
 use alloy_primitives::{Address, U256};
-
 
 sol! {
     event GreetingChange(
@@ -21,9 +15,7 @@ sol! {
 		bool premium,
 		uint256 value
 	);
-}
 
-sol! {
     error NotOwnerError();
 }
 
@@ -41,8 +33,8 @@ sol_storage! {
         address owner;
         string  greeting;
         bool premium;
-        uint256  totalCounter ;
-        mapping(address => uint256) userGreetingCounter;
+        uint256  total_counter ;
+        mapping(address => uint256) user_greeting_counter;
     }
 }
 
@@ -51,26 +43,30 @@ sol_storage! {
 impl YourContract {
    
    #[payable]
-    pub fn setGreeting(&mut self, _newGreating: String) -> (){
-       self.greeting.set_str(_newGreating.clone());
-       self.totalCounter.set(*self.totalCounter + U256::from(1));
-       let mut address_greetings_count = self.userGreetingCounter.setter(msg::sender());
-       let count =  address_greetings_count.get();
-       address_greetings_count.set(count + U256::from(1));
-       if msg::value() > U256::from(0){
-           self.premium.set(true);
-       }
-       else {
-           self.premium.set(false);
-       }
-     
-       evm::log(GreetingChange {
-           greetingSetter: msg::sender(),
-           newGreeting: _newGreating, 
-           premium:*self.premium, 
-           value:msg::value()
-      });
+    pub fn set_greeting(&mut self, new_greeting: String) {
+        // Set the greeting
+        self.greeting.set_str(&new_greeting);
 
+        // Increment the total counter
+        let new_total_count = *self.total_counter + U256::from(1);
+        self.total_counter.set(new_total_count);
+
+        // Increment the user's greeting count
+        let address_greetings_count = self.user_greeting_counter.get(msg::sender());
+        let updated_count = address_greetings_count + U256::from(1);
+        self.user_greeting_counter.insert(msg::sender(), updated_count);
+
+        // Set the premium status based on the msg value in one step
+        self.premium.set(msg::value() > U256::from(0));
+
+        // Emit the event
+        evm::log(GreetingChange {
+            greetingSetter: msg::sender(),
+            newGreeting: new_greeting, 
+            premium: *self.premium, 
+            value: msg::value(),
+        });
+    
     }
 
     pub fn withdraw (&mut self) -> Result<() ,YourContractError>{
@@ -95,12 +91,12 @@ impl YourContract {
         self.premium.get()
     }
 
-    pub fn totalCounter(&self) -> U256 {
-        self.totalCounter.get()
+    pub fn total_counter(&self) -> U256 {
+        self.total_counter.get()
     }
 
-    pub fn userGreetingCounter(&self, _user: Address) -> U256 {
-        self.userGreetingCounter.get(_user)
+    pub fn user_greeting_counter(&self, _user: Address) -> U256 {
+        self.user_greeting_counter.get(_user)
     }
 
 }
