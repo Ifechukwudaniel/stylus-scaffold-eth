@@ -1,4 +1,4 @@
-# 🏗 Scaffold-ETH 2
+# 🏗 Stylus Scaffold-ETH 2
 
 <h4 align="center">
   <a href="https://docs.scaffoldeth.io">Documentation</a> |
@@ -6,6 +6,28 @@
 </h4>
 
 🧪 An open-source, up-to-date toolkit for building decentralized applications (dapps) on the Ethereum blockchain. It's designed to make it easier for developers to create and deploy smart contracts and build user interfaces that interact with those contracts.
+
+### Install Backend Compiler
+Next, install rust and stylus cli and all the backend dependency for interacting with Stylus
+```bash
+# Requires Rust Nightly
+rustup update
+rustup update nightly
+rustup component add rust-src --toolchain nightly-x86_64-unknown-linux-gnu
+
+# Install Stylus
+# Ensure to target wasm32-unknown-unknown to nightly
+cargo install --force cargo-stylus cargo-stylus-check
+rustup target add wasm32-unknown-unknown
+
+# Library Helper
+cargo install koba
+
+# Solidity Compiler Solc
+sudo add-apt-repository ppa:ethereum/ethereum
+sudo apt-get update
+sudo apt-get install solc
+```
 
 ⚙️ Built using NextJS, RainbowKit, Hardhat, Wagmi, Viem, and Typescript.
 
